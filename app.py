@@ -1,9 +1,19 @@
 import streamlit as st
+import sys
+import subprocess
+
+# Ensure aifc is installed (required for speech_recognition)
+try:
+    import aifc
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "aifc"])
+    import aifc
+
+# Now import other dependencies
 import speech_recognition as sr
 import PyPDF2
 import docx2txt
 import google.generativeai as genai
-import textwrap
 import os
 import io
 import tempfile
@@ -11,10 +21,11 @@ from audio_recorder_streamlit import audio_recorder
 import base64
 from datetime import datetime
 
-# Configuration for Gemini API
-GEMINI_API_KEY = "AIzaSyDg8vSbT_wueoiGwi_0W9UjJLkPNjhLHwY"  # Replace with your API key
+# Configuration for Gemini API - Hardcoded (NOT RECOMMENDED FOR PUBLIC REPOS)
+GEMINI_API_KEY = "AIzaSyDg8vSbT_wueoiGwi_0W9UjJLkPNjhLHwY"  # Replace with your actual API key
 genai.configure(api_key=GEMINI_API_KEY)
 
+# Initialize Gemini model
 model = genai.GenerativeModel(
     model_name="gemini-1.5-flash",
     generation_config={"temperature": 0.7, "max_output_tokens": 2048},
@@ -26,7 +37,8 @@ model = genai.GenerativeModel(
     ]
 )
 
-# TEXT EXTRACTION 
+# ========== TEXT EXTRACTION ==========
+@st.cache_data(show_spinner=False)
 def extract_text(uploaded_file):
     try:
         if uploaded_file.name.endswith('.pdf'):
@@ -48,7 +60,7 @@ def extract_text(uploaded_file):
     except Exception as e:
         return f"Error extracting text: {str(e)}"
 
-# AUDIO TRANSCRIPTION 
+# ========== AUDIO TRANSCRIPTION ==========
 def transcribe_audio(audio_path):
     recognizer = sr.Recognizer()
     try:
@@ -62,7 +74,7 @@ def transcribe_audio(audio_path):
     except Exception as e:
         return f"Audio processing error: {str(e)}"
 
-#  GEMINI RESPONSE 
+# ========== GEMINI RESPONSE ==========
 def generate_response(question, context_text):
     try:
         # Format prompt for better context understanding
@@ -72,14 +84,15 @@ def generate_response(question, context_text):
     except Exception as e:
         return f"Error generating response: {str(e)}"
 
-# STREAMLIT UI 
+# ========== STREAMLIT UI ==========
 st.set_page_config(
-    page_title="Document Chatbot with Voice",
+    page_title="DocVoice Pro - Document Chatbot",
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
+# Custom CSS for dark/light theme support
 st.markdown("""
 <style>
     :root {
@@ -306,7 +319,7 @@ if 'reset_input' not in st.session_state:
 # App header
 st.markdown("""
 <div class="logo">
-    <h1>📄 DocVoice AI</h1>
+    <h1>📄 DocVoice Pro</h1>
     <p>Chat with your documents using voice commands</p>
 </div>
 """, unsafe_allow_html=True)
@@ -376,7 +389,7 @@ with st.sidebar:
             os.unlink(tmp_path)
             
     else:  # Type Text
-        question_text = st.text_input("✏️ Enter your question:", label_visibility="collapsed")
+        question_text = st.text_input("✏️ Enter your question:", label_visibility="collapsed", key="text_input")
     
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -467,6 +480,6 @@ if st.sidebar.button("🧹 Clear Chat History"):
 st.sidebar.divider()
 st.sidebar.markdown("""
 <div style="text-align: center; padding: 10px; color: #777; font-size: 0.8rem;">
-    Powered by Gemini AI • v1.2
+    Powered by Gemini AI • v1.3
 </div>
 """, unsafe_allow_html=True)
