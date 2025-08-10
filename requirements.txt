@@ -8,4 +8,3 @@ pydub==0.25.1
 python-docx==1.1.0
 sounddevice==0.4.6
 soundfile==0.12.1
-aifc==1.0.0
