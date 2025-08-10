@@ -3,11 +3,9 @@ import sys
 import subprocess
 
 # Ensure aifc is installed (required for speech_recognition)
-try:
-    import aifc
-except ImportError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "aifc"])
-    import aifc
+# aifc is part of Python's standard library — no install needed
+import aifc
+
 
 # Now import other dependencies
 import speech_recognition as sr
@@ -483,3 +481,4 @@ st.sidebar.markdown("""
     Powered by Gemini AI • v1.3
 </div>
 """, unsafe_allow_html=True)
+
